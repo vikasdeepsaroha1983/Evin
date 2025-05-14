@@ -1,0 +1,9 @@
+{
+	"name": "pipeline-evin",
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "95246bbb-b497-4ccf-a1f1-ae1148cad344",
+		"tenantId": "594b7958-3fa7-4674-8687-d78fb9015860"
+	}
+}
