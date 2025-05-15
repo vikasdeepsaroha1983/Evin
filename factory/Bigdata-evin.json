@@ -1,0 +1,9 @@
+{
+	"name": "Bigdata-evin",
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c16ccbae-cbfe-4d30-b0d2-a4da6096457d",
+		"tenantId": "594b7958-3fa7-4674-8687-d78fb9015860"
+	}
+}
