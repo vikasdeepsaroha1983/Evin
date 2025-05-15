@@ -1,6 +1,0 @@
-{
-	"name": "evin-integration-runtime",
-	"properties": {
-		"type": "SelfHosted"
-	}
-}
