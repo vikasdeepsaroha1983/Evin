@@ -17,10 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": {
-							"value": "@concat('select * from ',pipeline().parameters.schema_name, '.', pipeline().parameters.table_name,' WHERE ', pipeline().parameters.watermark_column, ' > ', pipeline().parameters.last_watermark, '')",
-							"type": "Expression"
-						}
+						"query": "@concat('select * from ',pipeline().parameters.schema_name, '.', pipeline().parameters.table_name,' WHERE ', pipeline().parameters.watermark_column, ' > ', pipeline().parameters.last_watermark, '')"
 					},
 					"enableStaging": false
 				},
@@ -54,6 +51,11 @@
 			},
 			"last_watermark": {
 				"type": "string"
+			}
+		},
+		"variables": {
+			"query": {
+				"type": "String"
 			}
 		},
 		"annotations": []
