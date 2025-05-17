@@ -5,14 +5,17 @@
 		"factoryName": {
 			"value": "Bigdata-evin"
 		},
-		"AzureDataLakeStorage1_accountKey": {
+		"AzureBlobStorage1_connectionString": {
 			"value": ""
 		},
 		"PostgreSql1_password": {
 			"value": ""
 		},
-		"AzureDataLakeStorage1_properties_typeProperties_url": {
-			"value": "https://evindata.dfs.core.windows.net/"
+		"ls_evin_data_accountKey": {
+			"value": ""
+		},
+		"ls_evin_source_password": {
+			"value": ""
 		},
 		"PostgreSql1_properties_typeProperties_server": {
 			"value": "102.210.149.42"
@@ -21,6 +24,18 @@
 			"value": "live_migration"
 		},
 		"PostgreSql1_properties_typeProperties_username": {
+			"value": "postgres"
+		},
+		"ls_evin_data_properties_typeProperties_url": {
+			"value": "https://evindata.dfs.core.windows.net/"
+		},
+		"ls_evin_source_properties_typeProperties_server": {
+			"value": "192.168.20.170"
+		},
+		"ls_evin_source_properties_typeProperties_database": {
+			"value": "live_migration"
+		},
+		"ls_evin_source_properties_typeProperties_username": {
 			"value": "postgres"
 		}
 	}
