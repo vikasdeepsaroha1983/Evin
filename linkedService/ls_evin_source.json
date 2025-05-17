@@ -1,0 +1,21 @@
+{
+	"name": "ls_evin_source",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "PostgreSqlV2",
+		"typeProperties": {
+			"server": "192.168.20.170",
+			"port": "5433",
+			"database": "live_migration",
+			"username": "postgres",
+			"sslMode": 2,
+			"authenticationType": "Basic",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI4MWM2NDY3Ny04ZGM4LTRhNWItYTlkMy0zOTU5N2VmOWY3MDgiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "evin-integration-runtime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
