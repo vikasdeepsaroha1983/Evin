@@ -109,7 +109,7 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('evin-lookup-metadata').output",
+								"value": "@activity('evin-lookup-metadata').output.value",
 								"type": "Expression"
 							},
 							"activities": [
