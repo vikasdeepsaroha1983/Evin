@@ -1,0 +1,61 @@
+{
+	"name": "Ingest_Single_Table_Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy_PostgreSQL_To_ADLS",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "PostgreSqlV2Source",
+						"query": {
+							"value": "@concat('select * from ',pipeline().parameters.schema_name, '.', pipeline().parameters.table_name,' WHERE ', pipeline().parameters.watermark_column, ' > ', pipeline().parameters.last_watermark, '')",
+							"type": "Expression"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_master_source",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": {
+								"value": "@pipeline().parameters.schema_name",
+								"type": "Expression"
+							},
+							"table_name": {
+								"value": "@pipeline().parameters.table_name",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"schema_name": {
+				"type": "string"
+			},
+			"table_name": {
+				"type": "string"
+			},
+			"watermark_column": {
+				"type": "string"
+			},
+			"last_watermark": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
