@@ -30,7 +30,7 @@
 					"type": "Expression"
 				},
 				"fileSystem": {
-					"value": "@dataset().schema_name",
+					"value": "@concat('raw/',dataset().schema_name)",
 					"type": "Expression"
 				}
 			},
