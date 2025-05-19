@@ -29,10 +29,7 @@
 					"value": "@dataset().table_name",
 					"type": "Expression"
 				},
-				"fileSystem": {
-					"value": "@concat('raw/',dataset().schema_name)",
-					"type": "Expression"
-				}
+				"fileSystem": "raw"
 			},
 			"compressionCodec": "snappy"
 		},
