@@ -71,12 +71,63 @@
 								"type": "Expression"
 							},
 							"file_name": {
-								"value": "@concat('ingestion_date=',formatDateTime(utcNow(),'yyyy-MM-dd'))",
+								"value": "@concat('ingestion_date=',formatDateTime(utcNow(),'yyyy-MM-dd hh:MM:ss'))",
 								"type": "Expression"
 							}
 						}
 					}
 				]
+			},
+			{
+				"name": "fetch_max_watermark",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Copy_PostgreSQL_To_ADLS",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "ParquetSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "ParquetReadSettings"
+						}
+					},
+					"dataset": {
+						"referenceName": "ds_sink",
+						"type": "DatasetReference",
+						"parameters": {
+							"schema_name": {
+								"value": "@pipeline().parameters.schema_name",
+								"type": "Expression"
+							},
+							"table_name": {
+								"value": "@pipeline().parameters.table_name",
+								"type": "Expression"
+							},
+							"file_name": {
+								"value": "@concat('ingestion_date=',formatDateTime(pipeline().TriggerTime,'yyyy-MM-dd hh:MM:SS'))",
+								"type": "Expression"
+							}
+						}
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -95,6 +146,9 @@
 		},
 		"variables": {
 			"query": {
+				"type": "String"
+			},
+			"water_mark_value": {
 				"type": "String"
 			}
 		},
