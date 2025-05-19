@@ -17,7 +17,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "PostgreSqlV2Source",
-						"query": "@concat('select * from ',pipeline().parameters.schema_name, '.', pipeline().parameters.table_name,' WHERE ', pipeline().parameters.watermark_column, ' > ', pipeline().parameters.last_watermark, '')"
+						"query": {
+							"value": "@concat('select * from ',pipeline().parameters.schema_name, '.', pipeline().parameters.table_name,' WHERE ', pipeline().parameters.watermark_column, ' is null or ', pipeline().parameters.watermark_column, ' > ', pipeline().parameters.last_watermark, '')",
+							"type": "Expression"
+						}
 					},
 					"sink": {
 						"type": "ParquetSink",
