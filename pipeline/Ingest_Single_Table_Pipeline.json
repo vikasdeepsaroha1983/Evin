@@ -101,6 +101,24 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_getlatestWatermark",
+						"type": "DataFlowReference",
+						"parameters": {
+							"table_name": {
+								"value": "'@{pipeline().parameters.table_name}'",
+								"type": "Expression"
+							},
+							"watermark_column": {
+								"value": "'@{pipeline().parameters.watermark_column}'",
+								"type": "Expression"
+							},
+							"ingestion_date": {
+								"value": "'@{variables('ingestion_time')}'",
+								"type": "Expression"
+							}
+						}
+					},
 					"compute": {
 						"coreCount": 8,
 						"computeType": "General"
