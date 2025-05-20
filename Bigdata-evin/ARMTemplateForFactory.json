@@ -655,12 +655,6 @@
 					],
 					"transformations": [
 						{
-							"name": "aggregate1"
-						},
-						{
-							"name": "colTblName"
-						},
-						{
 							"name": "join1"
 						},
 						{
@@ -668,6 +662,12 @@
 						},
 						{
 							"name": "select1"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "aggregate1"
 						}
 					],
 					"scriptLines": [
@@ -698,9 +698,7 @@
 						"     allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     ignoreNoFilesFound: false) ~> sourceControl",
-						"sourceTable aggregate(created_on = max(created_on)) ~> aggregate1",
-						"aggregate1 derive(table_name = toString($table_name)) ~> colTblName",
-						"sourceControl, colTblName join(sourceControl@table_name == colTblName@table_name,",
+						"sourceControl, aggregate1 join(table_name == tbl_name,",
 						"     joinType:'left',",
 						"     matchType:'exact',",
 						"     ignoreSpaces: false,",
@@ -708,13 +706,16 @@
 						"join1 derive(col_watermark = iif(last_watermark>created_on,last_watermark,created_on)) ~> watermark",
 						"watermark select(mapColumn(",
 						"          schema_name,",
-						"          table_name = sourceControl@table_name,",
+						"          table_name,",
 						"          watermark_column,",
 						"          last_watermark = col_watermark,",
 						"          is_active",
 						"     ),",
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true) ~> select1",
+						"sourceTable derive(tbl_name = $table_name) ~> derivedColumn1",
+						"derivedColumn1 aggregate(groupBy(tbl_name),",
+						"     created_on = max(created_on)) ~> aggregate1",
 						"select1 sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
 						"     partitionFileNames:['metadata.csv'],",
