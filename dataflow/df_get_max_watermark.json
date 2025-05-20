@@ -30,6 +30,12 @@
 			],
 			"transformations": [
 				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "aggregate1"
+				},
+				{
 					"name": "join1"
 				},
 				{
@@ -37,12 +43,6 @@
 				},
 				{
 					"name": "select1"
-				},
-				{
-					"name": "derivedColumn1"
-				},
-				{
-					"name": "aggregate1"
 				}
 			],
 			"scriptLines": [
@@ -73,6 +73,9 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> sourceControl",
+				"sourceTable derive(tbl_name = $table_name) ~> derivedColumn1",
+				"derivedColumn1 aggregate(groupBy(tbl_name),",
+				"     created_on = max(created_on)) ~> aggregate1",
 				"sourceControl, aggregate1 join(table_name == tbl_name,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
@@ -88,9 +91,6 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> select1",
-				"sourceTable derive(tbl_name = $table_name) ~> derivedColumn1",
-				"derivedColumn1 aggregate(groupBy(tbl_name),",
-				"     created_on = max(created_on)) ~> aggregate1",
 				"select1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     partitionFileNames:['metadata.csv'],",
