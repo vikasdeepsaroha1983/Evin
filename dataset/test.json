@@ -1,0 +1,65 @@
+{
+	"name": "test",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_evin_data",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"table_name": {
+				"type": "string"
+			},
+			"file_name": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "Parquet",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().file_name",
+					"type": "Expression"
+				},
+				"folderPath": "table_name",
+				"fileSystem": "raw"
+			},
+			"compressionCodec": "snappy"
+		},
+		"schema": [
+			{
+				"name": "id",
+				"type": "INT32"
+			},
+			{
+				"name": "name",
+				"type": "UTF8"
+			},
+			{
+				"name": "description",
+				"type": "UTF8"
+			},
+			{
+				"name": "created_by",
+				"type": "INT64"
+			},
+			{
+				"name": "created_on",
+				"type": "INT96"
+			},
+			{
+				"name": "is_deleted",
+				"type": "BOOLEAN"
+			},
+			{
+				"name": "updated_by",
+				"type": "INT64"
+			},
+			{
+				"name": "updated_on",
+				"type": "INT96"
+			}
+		]
+	}
+}
