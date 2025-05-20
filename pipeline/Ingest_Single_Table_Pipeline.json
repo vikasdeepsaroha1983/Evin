@@ -5,7 +5,14 @@
 			{
 				"name": "Copy_PostgreSQL_To_ADLS",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "set-ingestion-time",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -62,16 +69,12 @@
 						"referenceName": "ds_sink",
 						"type": "DatasetReference",
 						"parameters": {
-							"schema_name": {
-								"value": "@pipeline().parameters.schema_name",
-								"type": "Expression"
-							},
 							"table_name": {
 								"value": "@pipeline().parameters.table_name",
 								"type": "Expression"
 							},
 							"file_name": {
-								"value": "@concat('ingestion_date=',formatDateTime(utcNow(),'yyyy-MM-dd hh:mm:ss'))",
+								"value": "@concat('ingestion_date=',formatDateTime(variables('ingestion_time'),'yyyy-MM-dd hh:mm:ss'))",
 								"type": "Expression"
 							}
 						}
@@ -104,6 +107,23 @@
 					},
 					"traceLevel": "Fine"
 				}
+			},
+			{
+				"name": "set-ingestion-time",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "ingestion_time",
+					"value": {
+						"value": "@formatDateTime(pipeline().TriggerTime,'YYYY-MM-dd hh:mm:ss' )",
+						"type": "Expression"
+					}
+				}
 			}
 		],
 		"parameters": {
@@ -122,6 +142,9 @@
 		},
 		"variables": {
 			"query": {
+				"type": "String"
+			},
+			"ingestion_time": {
 				"type": "String"
 			}
 		},
