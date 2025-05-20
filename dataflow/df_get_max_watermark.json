@@ -47,7 +47,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     table_name as string ($table_name)",
+				"     table_name as string",
 				"}",
 				"source(output(",
 				"          id as integer,",
