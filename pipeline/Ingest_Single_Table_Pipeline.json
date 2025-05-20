@@ -93,7 +93,7 @@
 				"typeProperties": {
 					"variableName": "ingestion_time",
 					"value": {
-						"value": "@concat('ingestion_date=',formatDateTime(pipeline().TriggerTime,'YYYY-MM-dd hh:mm:ss' ),'.parquet')",
+						"value": "@concat('ingestion_date=',formatDateTime(pipeline().TriggerTime,'yyyy-MM-dd hh:mm:ss' ))",
 						"type": "Expression"
 					}
 				}
