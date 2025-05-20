@@ -47,7 +47,7 @@
 			],
 			"scriptLines": [
 				"parameters{",
-				"     table_name as string",
+				"     table_name as string ($table_name)",
 				"}",
 				"source(output(",
 				"          id as integer,",
@@ -74,7 +74,7 @@
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false) ~> sourceControl",
 				"sourceTable aggregate(created_on = max(created_on)) ~> aggregate1",
-				"aggregate1 derive(table_name = $table_name) ~> colTblName",
+				"aggregate1 derive(table_name = toString($table_name)) ~> colTblName",
 				"sourceControl, colTblName join(sourceControl@table_name == colTblName@table_name,",
 				"     joinType:'left',",
 				"     matchType:'exact',",
