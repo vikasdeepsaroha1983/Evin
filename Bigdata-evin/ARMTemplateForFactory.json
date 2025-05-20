@@ -157,6 +157,59 @@
 								"type": "Expression"
 							}
 						}
+					},
+					{
+						"name": "df_fetch_watermark",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [
+							{
+								"activity": "Copy_PostgreSQL_To_ADLS",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_get_max_watermark",
+								"type": "DataFlowReference",
+								"parameters": {
+									"table_name": {
+										"value": "'@{pipeline().parameters.table_name}'",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"sourceTable": {
+										"table_name": {
+											"value": "@pipeline().parameters.table_name",
+											"type": "Expression"
+										},
+										"file_name": {
+											"value": "@concat(variables('ingestion_time'),'.parquet')",
+											"type": "Expression"
+										}
+									},
+									"sourceControl": {},
+									"sink1": {}
+								},
+								"linkedServiceParameters": {}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
 					}
 				],
 				"policy": {
@@ -188,7 +241,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_master_source')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sink')]"
+				"[concat(variables('factoryId'), '/datasets/ds_sink')]",
+				"[concat(variables('factoryId'), '/dataflows/df_get_max_watermark')]"
 			]
 		},
 		{
@@ -400,6 +454,79 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/test')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_evin_data",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"table_name": {
+						"type": "string"
+					},
+					"file_name": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().file_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().table_name",
+							"type": "Expression"
+						},
+						"fileSystem": "raw"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": [
+					{
+						"name": "id",
+						"type": "INT32"
+					},
+					{
+						"name": "name",
+						"type": "UTF8"
+					},
+					{
+						"name": "description",
+						"type": "UTF8"
+					},
+					{
+						"name": "created_by",
+						"type": "INT64"
+					},
+					{
+						"name": "created_on",
+						"type": "INT96"
+					},
+					{
+						"name": "is_deleted",
+						"type": "BOOLEAN"
+					},
+					{
+						"name": "updated_by",
+						"type": "INT64"
+					},
+					{
+						"name": "updated_on",
+						"type": "INT96"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_evin_data')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -494,6 +621,115 @@
 				"typeProperties": {}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_get_max_watermark')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "test",
+								"type": "DatasetReference"
+							},
+							"name": "sourceTable"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_metadata",
+								"type": "DatasetReference"
+							},
+							"name": "sourceControl"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_metadata",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						},
+						{
+							"name": "colTblName"
+						},
+						{
+							"name": "join1"
+						},
+						{
+							"name": "watermark"
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     table_name as string",
+						"}",
+						"source(output(",
+						"          id as integer,",
+						"          name as string,",
+						"          description as string,",
+						"          created_by as long,",
+						"          created_on as timestamp,",
+						"          is_deleted as boolean,",
+						"          updated_by as long,",
+						"          updated_on as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> sourceTable",
+						"source(output(",
+						"          schema_name as string,",
+						"          table_name as string,",
+						"          watermark_column as string,",
+						"          last_watermark as timestamp,",
+						"          is_active as boolean",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceControl",
+						"sourceTable aggregate(created_on = max(created_on)) ~> aggregate1",
+						"aggregate1 derive(col_name = $table_name) ~> colTblName",
+						"sourceControl, colTblName join(table_name == col_name,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1 derive(col_watermark = iif(last_watermark>created_on,last_watermark,created_on)) ~> watermark",
+						"watermark select(mapColumn(",
+						"          schema_name,",
+						"          table_name,",
+						"          watermark_column,",
+						"          last_watermark = col_watermark,",
+						"          is_active",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/test')]",
+				"[concat(variables('factoryId'), '/datasets/ds_metadata')]"
+			]
 		}
 	]
 }
