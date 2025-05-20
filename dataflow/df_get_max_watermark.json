@@ -6,19 +6,97 @@
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "ds_sink",
+						"referenceName": "test",
 						"type": "DatasetReference"
 					},
-					"name": "sourceFetchMaxWatermark"
+					"name": "sourceTable"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_metadata",
+						"type": "DatasetReference"
+					},
+					"name": "sourceControl"
 				}
 			],
-			"sinks": [],
-			"transformations": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_metadata",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "aggregate1"
+				},
+				{
+					"name": "colTblName"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "watermark"
+				},
+				{
+					"name": "select1"
+				}
+			],
 			"scriptLines": [
-				"source(allowSchemaDrift: true,",
+				"parameters{",
+				"     table_name as string",
+				"}",
+				"source(output(",
+				"          id as integer,",
+				"          name as string,",
+				"          description as string,",
+				"          created_by as long,",
+				"          created_on as timestamp,",
+				"          is_deleted as boolean,",
+				"          updated_by as long,",
+				"          updated_on as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     ignoreNoFilesFound: false,",
-				"     format: 'parquet') ~> sourceFetchMaxWatermark"
+				"     format: 'parquet') ~> sourceTable",
+				"source(output(",
+				"          schema_name as string,",
+				"          table_name as string,",
+				"          watermark_column as string,",
+				"          last_watermark as timestamp,",
+				"          is_active as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceControl",
+				"sourceTable aggregate(created_on = max(created_on)) ~> aggregate1",
+				"aggregate1 derive(col_name = $table_name) ~> colTblName",
+				"sourceControl, colTblName join(table_name == col_name,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 derive(col_watermark = iif(last_watermark>created_on,last_watermark,created_on)) ~> watermark",
+				"watermark select(mapColumn(",
+				"          schema_name,",
+				"          table_name,",
+				"          watermark_column,",
+				"          last_watermark = col_watermark,",
+				"          is_active",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
 		}
 	}
