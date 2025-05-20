@@ -30,7 +30,8 @@
 				"     ignoreNoFilesFound: false,",
 				"     format: 'parquet',",
 				"     fileSystem: 'raw',",
-				"     wildcardPaths:[($table_name/*)]) ~> rawSource",
+				"     folderPath: ($table_name),",
+				"     fileName: ($ingestion_date)) ~> rawSource",
 				"rawSource aggregate() ~> getmaxvalue"
 			]
 		}
