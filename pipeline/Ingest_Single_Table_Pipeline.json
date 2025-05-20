@@ -71,7 +71,7 @@
 								"type": "Expression"
 							},
 							"file_name": {
-								"value": "@concat('ingestion_date=',formatDateTime(utcNow(),'yyyy-MM-dd hh:MM:ss'))",
+								"value": "@concat('ingestion_date=',formatDateTime(utcNow(),'yyyy-MM-dd hh:mm:ss'))",
 								"type": "Expression"
 							}
 						}
@@ -79,13 +79,13 @@
 				]
 			},
 			{
-				"name": "fetch_max_watermark",
-				"type": "Lookup",
+				"name": "get-latest-watermark",
+				"type": "ExecuteDataFlow",
 				"dependsOn": [
 					{
 						"activity": "Copy_PostgreSQL_To_ADLS",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
@@ -98,35 +98,11 @@
 				},
 				"userProperties": [],
 				"typeProperties": {
-					"source": {
-						"type": "ParquetSource",
-						"storeSettings": {
-							"type": "AzureBlobFSReadSettings",
-							"recursive": true,
-							"enablePartitionDiscovery": false
-						},
-						"formatSettings": {
-							"type": "ParquetReadSettings"
-						}
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
 					},
-					"dataset": {
-						"referenceName": "ds_sink",
-						"type": "DatasetReference",
-						"parameters": {
-							"schema_name": {
-								"value": "@pipeline().parameters.schema_name",
-								"type": "Expression"
-							},
-							"table_name": {
-								"value": "@pipeline().parameters.table_name",
-								"type": "Expression"
-							},
-							"file_name": {
-								"value": "@concat('ingestion_date=',formatDateTime(pipeline().TriggerTime,'yyyy-MM-dd hh:MM:SS'))",
-								"type": "Expression"
-							}
-						}
-					}
+					"traceLevel": "Fine"
 				}
 			}
 		],
@@ -146,9 +122,6 @@
 		},
 		"variables": {
 			"query": {
-				"type": "String"
-			},
-			"water_mark_value": {
 				"type": "String"
 			}
 		},
