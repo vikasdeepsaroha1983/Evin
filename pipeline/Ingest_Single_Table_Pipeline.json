@@ -123,7 +123,7 @@
 						"type": "DataFlowReference",
 						"parameters": {
 							"table_name": {
-								"value": "'@{pipeline().parameters.table_name}'",
+								"value": "@pipeline().parameters.table_name",
 								"type": "Expression"
 							}
 						},
