@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'PostgreSql1'"
 		},
+		"ls_covid_reporting_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_covid_reporting'"
+		},
 		"ls_evin_data_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_evin_data'"
@@ -34,6 +38,10 @@
 		"PostgreSql1_properties_typeProperties_username": {
 			"type": "string",
 			"defaultValue": "postgres"
+		},
+		"ls_covid_reporting_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://covidreportdata.dfs.core.windows.net/"
 		},
 		"ls_evin_data_properties_typeProperties_url": {
 			"type": "string",
@@ -81,6 +89,9 @@
 					"AzureBlobStorage1_connectionString": {
 						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
+					"ls_covid_reporting_accountKey": {
+						"value": "[parameters('ls_covid_reporting_accountKey')]"
+					},
 					"ls_evin_data_accountKey": {
 						"value": "[parameters('ls_evin_data_accountKey')]"
 					},
@@ -89,6 +100,9 @@
 					},
 					"ls_evin_source_password": {
 						"value": "[parameters('ls_evin_source_password')]"
+					},
+					"ls_covid_reporting_properties_typeProperties_url": {
+						"value": "[parameters('ls_covid_reporting_properties_typeProperties_url')]"
 					},
 					"ls_evin_data_properties_typeProperties_url": {
 						"value": "[parameters('ls_evin_data_properties_typeProperties_url')]"

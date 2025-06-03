@@ -11,6 +11,9 @@
 		"PostgreSql1_password": {
 			"value": ""
 		},
+		"ls_covid_reporting_accountKey": {
+			"value": ""
+		},
 		"ls_evin_data_accountKey": {
 			"value": ""
 		},
@@ -25,6 +28,9 @@
 		},
 		"PostgreSql1_properties_typeProperties_username": {
 			"value": "postgres"
+		},
+		"ls_covid_reporting_properties_typeProperties_url": {
+			"value": "https://covidreportdata.dfs.core.windows.net/"
 		},
 		"ls_evin_data_properties_typeProperties_url": {
 			"value": "https://evindata.dfs.core.windows.net/"
