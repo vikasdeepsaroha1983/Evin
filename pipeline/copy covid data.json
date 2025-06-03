@@ -113,19 +113,6 @@
 						}
 					]
 				}
-			},
-			{
-				"name": "Switch1",
-				"type": "Switch",
-				"dependsOn": [],
-				"userProperties": [],
-				"typeProperties": {
-					"cases": [
-						{
-							"value": "Case1"
-						}
-					]
-				}
 			}
 		],
 		"annotations": []
