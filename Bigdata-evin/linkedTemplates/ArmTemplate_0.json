@@ -149,12 +149,20 @@
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"file_name": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "case_deaths.csv",
+						"fileName": {
+							"value": "@dataset().file_name",
+							"type": "Expression"
+						},
 						"folderPath": "ecdc",
 						"fileSystem": "raw"
 					},
@@ -178,12 +186,20 @@
 					"referenceName": "ls_http_ecdc",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"relative_url": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
 					"location": {
 						"type": "HttpServerLocation",
-						"relativeUrl": "covid19/nationalcasedeath/csv"
+						"relativeUrl": {
+							"value": "@dataset().relative_url",
+							"type": "Expression"
+						}
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
@@ -323,76 +339,27 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/test')]",
+			"name": "[concat(parameters('factoryName'), '/js_config')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "ls_evin_data",
+					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
 				},
-				"parameters": {
-					"table_name": {
-						"type": "string"
-					},
-					"file_name": {
-						"type": "string"
-					}
-				},
 				"annotations": [],
-				"type": "Parquet",
+				"type": "Json",
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().file_name",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().table_name",
-							"type": "Expression"
-						},
-						"fileSystem": "raw"
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": [
-					{
-						"name": "id",
-						"type": "INT32"
-					},
-					{
-						"name": "name",
-						"type": "UTF8"
-					},
-					{
-						"name": "description",
-						"type": "UTF8"
-					},
-					{
-						"name": "created_by",
-						"type": "INT64"
-					},
-					{
-						"name": "created_on",
-						"type": "INT96"
-					},
-					{
-						"name": "is_deleted",
-						"type": "BOOLEAN"
-					},
-					{
-						"name": "updated_by",
-						"type": "INT64"
-					},
-					{
-						"name": "updated_on",
-						"type": "INT96"
+						"fileName": "config.json",
+						"fileSystem": "source"
 					}
-				]
+				},
+				"schema": {}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/ls_evin_data')]"
+				"[concat(variables('factoryId'), '/linkedServices/ls_covid_reporting')]"
 			]
 		},
 		{
@@ -617,14 +584,14 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pipeline1')]",
+			"name": "[concat(parameters('factoryName'), '/copy_ecdc_data')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"activities": [
 					{
-						"name": "copy ecdc data",
-						"type": "Copy",
+						"name": "lp_get_config",
+						"type": "Lookup",
 						"dependsOn": [],
 						"policy": {
 							"timeout": "0.12:00:00",
@@ -636,58 +603,128 @@
 						"userProperties": [],
 						"typeProperties": {
 							"source": {
-								"type": "DelimitedTextSource",
+								"type": "JsonSource",
 								"storeSettings": {
-									"type": "HttpReadSettings",
-									"requestMethod": "GET"
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
 								},
 								"formatSettings": {
-									"type": "DelimitedTextReadSettings"
+									"type": "JsonReadSettings"
 								}
 							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ds_case_deaths_raw",
+							"dataset": {
+								"referenceName": "js_config",
 								"type": "DatasetReference",
 								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "lp_get_config",
+								"dependencyConditions": [
+									"Succeeded"
+								]
 							}
 						],
-						"outputs": [
-							{
-								"referenceName": "ds_case_death_raw_adls",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('lp_get_config').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "copy ecdc data",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_case_deaths_raw",
+											"type": "DatasetReference",
+											"parameters": {
+												"relative_url": {
+													"value": "@item().relative_url",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_case_death_raw_adls",
+											"type": "DatasetReference",
+											"parameters": {
+												"file_name": {
+													"value": "@item().file_name",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"variables": {
+					"test": {
+						"type": "String"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/js_config')]",
 				"[concat(variables('factoryId'), '/datasets/ds_case_deaths_raw')]",
 				"[concat(variables('factoryId'), '/datasets/ds_case_death_raw_adls')]"
 			]
@@ -725,118 +762,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ls_evin_source')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/df_get_max_watermark')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "test",
-								"type": "DatasetReference"
-							},
-							"name": "sourceTable"
-						},
-						{
-							"dataset": {
-								"referenceName": "ds_metadata",
-								"type": "DatasetReference"
-							},
-							"name": "sourceControl"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ds_metadata",
-								"type": "DatasetReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn1"
-						},
-						{
-							"name": "aggregate1"
-						},
-						{
-							"name": "join1"
-						},
-						{
-							"name": "watermark"
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"parameters{",
-						"     table_name as string",
-						"}",
-						"source(output(",
-						"          id as integer,",
-						"          name as string,",
-						"          description as string,",
-						"          created_by as long,",
-						"          created_on as timestamp,",
-						"          is_deleted as boolean,",
-						"          updated_by as long,",
-						"          updated_on as timestamp",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'parquet') ~> sourceTable",
-						"source(output(",
-						"          schema_name as string,",
-						"          table_name as string,",
-						"          watermark_column as string,",
-						"          last_watermark as timestamp,",
-						"          is_active as boolean",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> sourceControl",
-						"sourceTable derive(tbl_name = $table_name) ~> derivedColumn1",
-						"derivedColumn1 aggregate(groupBy(tbl_name),",
-						"     created_on = max(created_on)) ~> aggregate1",
-						"sourceControl, aggregate1 join(table_name == tbl_name,",
-						"     joinType:'left',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> join1",
-						"join1 derive(col_watermark = iif(last_watermark>created_on,last_watermark,created_on)) ~> watermark",
-						"watermark select(mapColumn(",
-						"          schema_name,",
-						"          table_name,",
-						"          watermark_column,",
-						"          last_watermark = col_watermark,",
-						"          is_active",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['metadata.csv'],",
-						"     umask: 0222,",
-						"     preCommands: [],",
-						"     postCommands: [],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/test')]",
-				"[concat(variables('factoryId'), '/datasets/ds_metadata')]"
 			]
 		},
 		{
@@ -940,58 +865,6 @@
 								"type": "Expression"
 							}
 						}
-					},
-					{
-						"name": "df_fetch_watermark",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [
-							{
-								"activity": "Copy_PostgreSQL_To_ADLS",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_get_max_watermark",
-								"type": "DataFlowReference",
-								"parameters": {
-									"table_name": {
-										"value": "@pipeline().parameters.table_name",
-										"type": "Expression"
-									}
-								},
-								"datasetParameters": {
-									"sourceTable": {
-										"table_name": {
-											"value": "@pipeline().parameters.table_name",
-											"type": "Expression"
-										},
-										"file_name": {
-											"value": "@concat(variables('ingestion_time'),'.parquet')",
-											"type": "Expression"
-										}
-									},
-									"sourceControl": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
 					}
 				],
 				"policy": {
@@ -1023,8 +896,7 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ds_master_source')]",
-				"[concat(variables('factoryId'), '/datasets/ds_sink')]",
-				"[concat(variables('factoryId'), '/dataflows/df_get_max_watermark')]"
+				"[concat(variables('factoryId'), '/datasets/ds_sink')]"
 			]
 		},
 		{
