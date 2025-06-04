@@ -44,6 +44,9 @@
 		"ls_evin_source_properties_typeProperties_username": {
 			"value": "postgres"
 		},
+		"ls_http_ecdc_properties_typeProperties_url": {
+			"value": "https://opendata.ecdc.europa.eu"
+		},
 		"containerUri": {
 			"value": ""
 		},
