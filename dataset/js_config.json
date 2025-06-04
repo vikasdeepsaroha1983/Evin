@@ -1,0 +1,19 @@
+{
+	"name": "js_config",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_covid_reporting",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "config.json",
+				"fileSystem": "source"
+			}
+		},
+		"schema": {}
+	}
+}
