@@ -61,7 +61,7 @@
 		},
 		"ls_http_ecdc_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://opendata.ecdc.europa.eu"
+			"defaultValue": "https://github.com"
 		},
 		"containerUri": {
 			"type": "string",

@@ -37,7 +37,7 @@
 		},
 		"ls_http_ecdc_properties_typeProperties_url": {
 			"type": "string",
-			"defaultValue": "https://opendata.ecdc.europa.eu"
+			"defaultValue": "https://github.com"
 		},
 		"PostgreSql1_properties_typeProperties_server": {
 			"type": "string",
@@ -690,7 +690,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"relative_url": {
-													"value": "@item().relative_url",
+													"value": "@item().sourceRelativeURL",
 													"type": "Expression"
 												}
 											}
@@ -702,7 +702,7 @@
 											"type": "DatasetReference",
 											"parameters": {
 												"file_name": {
-													"value": "@item().file_name",
+													"value": "@item().sinkFileName",
 													"type": "Expression"
 												}
 											}
