@@ -5,6 +5,10 @@
 		"typeProperties": {
 			"sources": [
 				{
+					"dataset": {
+						"referenceName": "ds_case_death_raw_adls",
+						"type": "DatasetReference"
+					},
 					"name": "sourceTable"
 				},
 				{
@@ -45,18 +49,9 @@
 				"parameters{",
 				"     table_name as string",
 				"}",
-				"source(output(",
-				"          id as integer,",
-				"          name as string,",
-				"          description as string,",
-				"          created_by as long,",
-				"          created_on as timestamp,",
-				"          is_deleted as boolean,",
-				"          updated_by as long,",
-				"          updated_on as timestamp",
-				"     ),",
-				"     allowSchemaDrift: true,",
-				"     validateSchema: false) ~> sourceTable",
+				"source(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceTable",
 				"source(output(",
 				"          schema_name as string,",
 				"          table_name as string,",
