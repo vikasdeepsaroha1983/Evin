@@ -1,0 +1,22 @@
+{
+	"name": "ds_case_deaths_raw",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_http_ecdc",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": "covid19/nationalcasedeath/csv"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
