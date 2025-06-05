@@ -1,0 +1,385 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "Bigdata-evin"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/df_transform_death_cases')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_cases_deaths",
+								"type": "DatasetReference"
+							},
+							"name": "CasesAndDeathSource"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_country_lookup",
+								"type": "DatasetReference"
+							},
+							"name": "countrySource"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "sink_processed_death_cases",
+								"type": "DatasetReference"
+							},
+							"name": "sinkDeathCases"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filteredCases"
+						},
+						{
+							"name": "selectDeathCases"
+						},
+						{
+							"name": "pvCasesCntDeathcnt"
+						},
+						{
+							"name": "lookupCountry"
+						},
+						{
+							"name": "finalSelect"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          country as string,",
+						"          country_code as string,",
+						"          continent as string,",
+						"          population as integer,",
+						"          indicator as string,",
+						"          daily_count as short,",
+						"          date as date,",
+						"          rate_14_day as double,",
+						"          source as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     inferDriftedColumnTypes: true,",
+						"     ignoreNoFilesFound: false,",
+						"     dateFormats: ['yyyy-MM-dd']) ~> CasesAndDeathSource",
+						"source(output(",
+						"          country as string,",
+						"          country_code_2_digit as string,",
+						"          country_code_3_digit as string,",
+						"          continent as string,",
+						"          population as integer",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> countrySource",
+						"CasesAndDeathSource filter(continent=='Europe' && not(isNull(country_code))) ~> filteredCases",
+						"filteredCases select(mapColumn(",
+						"          country,",
+						"          country_code,",
+						"          continent,",
+						"          population,",
+						"          indicator,",
+						"          daily_count,",
+						"          source,",
+						"          each(match(name=='date'),",
+						"               'reporting'+$$ = $$)",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectDeathCases",
+						"selectDeathCases pivot(groupBy(country,",
+						"          continent,",
+						"          population,",
+						"          source,",
+						"          reportingdate,",
+						"          country_code),",
+						"     pivotBy(indicator),",
+						"     daily_count = sum(daily_count),",
+						"     columnNaming: '$N$V_count',",
+						"     lateral: false) ~> pvCasesCntDeathcnt",
+						"pvCasesCntDeathcnt, countrySource lookup(pvCasesCntDeathcnt@country == countrySource@country,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupCountry",
+						"lookupCountry select(mapColumn(",
+						"          country = pvCasesCntDeathcnt@country,",
+						"          continent = pvCasesCntDeathcnt@continent,",
+						"          population = pvCasesCntDeathcnt@population,",
+						"          source,",
+						"          reportingdate,",
+						"          country_code,",
+						"          country = countrySource@country,",
+						"          country_code_2_digit,",
+						"          country_code_3_digit,",
+						"          continent = countrySource@continent,",
+						"          population = countrySource@population",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> finalSelect",
+						"finalSelect sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['death_cases.csv'],",
+						"     umask: 0777,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkDeathCases"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Ingest_Single_Table_Pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy_PostgreSQL_To_ADLS",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "set-ingestion-time",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "PostgreSqlV2Source",
+								"query": {
+									"value": "@concat('select * from ',pipeline().parameters.schema_name, '.', pipeline().parameters.table_name,' WHERE ', pipeline().parameters.watermark_column, ' is null or ', pipeline().parameters.watermark_column, ' > ''', pipeline().parameters.last_watermark, '''')",
+									"type": "Expression"
+								}
+							},
+							"sink": {
+								"type": "ParquetSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "ParquetWriteSettings"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_master_source",
+								"type": "DatasetReference",
+								"parameters": {
+									"schema_name": {
+										"value": "@pipeline().parameters.schema_name",
+										"type": "Expression"
+									},
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_sink",
+								"type": "DatasetReference",
+								"parameters": {
+									"table_name": {
+										"value": "@pipeline().parameters.table_name",
+										"type": "Expression"
+									},
+									"file_name": {
+										"value": "@variables('ingestion_time')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "set-ingestion-time",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "ingestion_time",
+							"value": {
+								"value": "@concat('ingestion_date=',formatDateTime(pipeline().TriggerTime,'yyyy-MM-dd hh:mm:ss' ))",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"schema_name": {
+						"type": "string"
+					},
+					"table_name": {
+						"type": "string"
+					},
+					"watermark_column": {
+						"type": "string"
+					},
+					"last_watermark": {
+						"type": "string"
+					}
+				},
+				"variables": {
+					"query": {
+						"type": "String"
+					},
+					"ingestion_time": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/evin_raw')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "to create raw data",
+				"activities": [
+					{
+						"name": "evin-lookup-metadata",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_metadata",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "loop_ingest_raw_data",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "evin-lookup-metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('evin-lookup-metadata').output.value",
+								"type": "Expression"
+							},
+							"activities": [
+								{
+									"name": "execute_pipeline_ingest_raw_data",
+									"type": "ExecutePipeline",
+									"dependsOn": [],
+									"policy": {
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"pipeline": {
+											"referenceName": "Ingest_Single_Table_Pipeline",
+											"type": "PipelineReference"
+										},
+										"waitOnCompletion": true,
+										"parameters": {
+											"schema_name": {
+												"value": "@item().schema_name",
+												"type": "Expression"
+											},
+											"table_name": {
+												"value": "@item().table_name",
+												"type": "Expression"
+											},
+											"watermark_column": {
+												"value": "@item().watermark_column",
+												"type": "Expression"
+											},
+											"last_watermark": {
+												"value": "@item().last_watermark",
+												"type": "Expression"
+											}
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Ingest_Single_Table_Pipeline')]"
+			]
+		}
+	]
+}
