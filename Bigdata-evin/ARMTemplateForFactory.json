@@ -626,7 +626,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Data flow1",
+						"name": "Data flow2",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
@@ -639,13 +639,15 @@
 						"userProperties": [],
 						"typeProperties": {
 							"dataflow": {
-								"referenceName": "df_transform_death_cases",
+								"referenceName": "df_transform_hospital_adminissions",
 								"type": "DataFlowReference",
 								"parameters": {},
 								"datasetParameters": {
-									"CasesAndDeathSource": {},
-									"countrySource": {},
-									"sinkDeathCases": {}
+									"sourceHospitalAdminissions": {},
+									"sourceCountry": {},
+									"SourceDate": {},
+									"sinkDaily": {},
+									"sinkWeekly": {}
 								}
 							},
 							"staging": {},
@@ -663,7 +665,7 @@
 				"annotations": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_transform_death_cases')]"
+				"[concat(variables('factoryId'), '/dataflows/df_transform_hospital_adminissions')]"
 			]
 		},
 		{
@@ -1067,7 +1069,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "ds_hospitalization_data_daily.csv",
+						"fileName": "hospitalization_data_daily.csv",
 						"folderPath": "ecdc",
 						"fileSystem": "processed"
 					},
@@ -1096,7 +1098,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "ds_hospitalization_data_weekly.csv",
+						"fileName": "hospitalization_data_weekly.csv",
 						"folderPath": "ecdc",
 						"fileSystem": "processed"
 					},
@@ -1698,18 +1700,22 @@
 						"     asc(country, true)) ~> sortweekly",
 						"sortDaily sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
-						"     umask: 0022,",
+						"     partitionFileNames:['hospitalization_data_daily.csv'],",
+						"     umask: 0777,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sinkDaily",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkDaily",
 						"sortweekly sink(allowSchemaDrift: true,",
 						"     validateSchema: false,",
+						"     partitionFileNames:['hospitalization_data_weekly.csv'],",
 						"     umask: 0022,",
 						"     preCommands: [],",
 						"     postCommands: [],",
 						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> sinkWeekly"
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkWeekly"
 					]
 				}
 			},
