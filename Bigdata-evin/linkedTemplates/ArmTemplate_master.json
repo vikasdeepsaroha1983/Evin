@@ -102,9 +102,6 @@
 					"PostgreSql1_password": {
 						"value": "[parameters('PostgreSql1_password')]"
 					},
-					"ls_evin_source_password": {
-						"value": "[parameters('ls_evin_source_password')]"
-					},
 					"ls_covid_reporting_properties_typeProperties_url": {
 						"value": "[parameters('ls_covid_reporting_properties_typeProperties_url')]"
 					},
@@ -122,15 +119,6 @@
 					},
 					"PostgreSql1_properties_typeProperties_username": {
 						"value": "[parameters('PostgreSql1_properties_typeProperties_username')]"
-					},
-					"ls_evin_source_properties_typeProperties_server": {
-						"value": "[parameters('ls_evin_source_properties_typeProperties_server')]"
-					},
-					"ls_evin_source_properties_typeProperties_database": {
-						"value": "[parameters('ls_evin_source_properties_typeProperties_database')]"
-					},
-					"ls_evin_source_properties_typeProperties_username": {
-						"value": "[parameters('ls_evin_source_properties_typeProperties_username')]"
 					}
 				}
 			},
@@ -149,6 +137,18 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"ls_evin_source_password": {
+						"value": "[parameters('ls_evin_source_password')]"
+					},
+					"ls_evin_source_properties_typeProperties_server": {
+						"value": "[parameters('ls_evin_source_properties_typeProperties_server')]"
+					},
+					"ls_evin_source_properties_typeProperties_database": {
+						"value": "[parameters('ls_evin_source_properties_typeProperties_database')]"
+					},
+					"ls_evin_source_properties_typeProperties_username": {
+						"value": "[parameters('ls_evin_source_properties_typeProperties_username')]"
 					}
 				}
 			},
