@@ -160,6 +160,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "raw"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -197,6 +200,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "config"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -226,6 +232,9 @@
 				"linkedServiceName": {
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "raw"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -293,6 +302,9 @@
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "raw"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -342,6 +354,9 @@
 				"linkedServiceName": {
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "raw"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -421,6 +436,9 @@
 					"referenceName": "ls_azure_covid_db",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "reportingDB"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [
@@ -477,6 +495,9 @@
 				"linkedServiceName": {
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "raw"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -536,6 +557,9 @@
 					"referenceName": "ls_evin_data",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "config"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -563,6 +587,9 @@
 				"linkedServiceName": {
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processed"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -592,6 +619,9 @@
 				"linkedServiceName": {
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "processed"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -658,6 +688,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "raw"
+				},
 				"annotations": [],
 				"type": "Parquet",
 				"typeProperties": {
@@ -690,6 +723,9 @@
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "config"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -719,6 +755,9 @@
 				"linkedServiceName": {
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "config"
 				},
 				"annotations": [],
 				"type": "Json",

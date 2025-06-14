@@ -53,6 +53,9 @@
 					"referenceName": "ls_covid_reporting",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "processed"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -616,6 +619,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "config"
+				},
 				"annotations": [],
 				"type": "PostgreSqlV2Table",
 				"schema": [],
@@ -1089,6 +1095,9 @@
 						"type": "String"
 					}
 				},
+				"folder": {
+					"name": "ingest"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -1252,6 +1261,124 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/pipelines/Ingest_Single_Table_Pipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/migrate data to Azure SQL Db')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ingest raw ECDC data",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "copy_ecdc_data",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "process ECDC data",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "ingest raw ECDC data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "process_death_cases",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "ingest ECDC data into Azure SQL DB",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "process ECDC data",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "copy hospital administration data",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "execute Pipeline"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/copy_ecdc_data')]",
+				"[concat(variables('factoryId'), '/pipelines/process_death_cases')]",
+				"[concat(variables('factoryId'), '/pipelines/copy hospital administration data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger ingest ECDC data')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipeline": {
+					"pipelineReference": {
+						"referenceName": "migrate data to Azure SQL Db",
+						"type": "PipelineReference"
+					},
+					"parameters": {}
+				},
+				"type": "TumblingWindowTrigger",
+				"typeProperties": {
+					"frequency": "Minute",
+					"interval": 15,
+					"startTime": "2025-06-14T05:49:00Z",
+					"endTime": "2025-06-15T05:49:00Z",
+					"delay": "00:00:00",
+					"maxConcurrency": 50,
+					"retryPolicy": {
+						"intervalInSeconds": 30
+					},
+					"dependsOn": []
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/migrate data to Azure SQL Db')]"
 			]
 		}
 	]
