@@ -447,6 +447,9 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"folder": {
+					"name": "reportingDB"
+				},
 				"annotations": []
 			},
 			"dependsOn": []
@@ -588,6 +591,9 @@
 					"test": {
 						"type": "String"
 					}
+				},
+				"folder": {
+					"name": "ingest"
 				},
 				"annotations": []
 			},
@@ -1132,6 +1138,9 @@
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
+				"folder": {
+					"name": "processed"
+				},
 				"annotations": []
 			},
 			"dependsOn": [
@@ -1235,6 +1244,9 @@
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "ingest"
 				},
 				"annotations": []
 			},
