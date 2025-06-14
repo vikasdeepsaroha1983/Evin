@@ -1,0 +1,73 @@
+{
+	"name": "migrate data to Azure SQL Db",
+	"properties": {
+		"activities": [
+			{
+				"name": "ingest raw ECDC data",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "copy_ecdc_data",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "process ECDC data",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "ingest raw ECDC data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "process_death_cases",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ingest ECDC data into Azure SQL DB",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "process ECDC data",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "copy hospital administration data",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"folder": {
+			"name": "execute Pipeline"
+		},
+		"annotations": []
+	}
+}

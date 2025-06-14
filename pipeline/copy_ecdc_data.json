@@ -130,6 +130,9 @@
 				"type": "String"
 			}
 		},
+		"folder": {
+			"name": "ingest"
+		},
 		"annotations": []
 	}
 }
