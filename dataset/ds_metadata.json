@@ -5,6 +5,9 @@
 			"referenceName": "ls_evin_data",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "config"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
