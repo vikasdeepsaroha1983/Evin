@@ -14,7 +14,7 @@
 			"frequency": "Minute",
 			"interval": 15,
 			"startTime": "2025-06-14T05:49:00Z",
-			"endTime": "2025-06-15T05:49:00Z",
+			"endTime": "2025-06-14T06:49:00Z",
 			"delay": "00:00:00",
 			"maxConcurrency": 50,
 			"retryPolicy": {
