@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'PostgreSql1'"
 		},
+		"ls_azure_covid_db_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azure_covid_db'"
+		},
 		"ls_covid_reporting_accountKey": {
 			"type": "secureString",
 			"metadata": "Secure string for 'accountKey' of 'ls_covid_reporting'"
@@ -38,6 +42,18 @@
 		"PostgreSql1_properties_typeProperties_username": {
 			"type": "string",
 			"defaultValue": "postgres"
+		},
+		"ls_azure_covid_db_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "ind-covid-db-server.database.windows.net"
+		},
+		"ls_azure_covid_db_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "covid-db"
+		},
+		"ls_azure_covid_db_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "vikas"
 		},
 		"ls_covid_reporting_properties_typeProperties_url": {
 			"type": "string",
@@ -93,14 +109,23 @@
 					"AzureBlobStorage1_connectionString": {
 						"value": "[parameters('AzureBlobStorage1_connectionString')]"
 					},
+					"ls_azure_covid_db_password": {
+						"value": "[parameters('ls_azure_covid_db_password')]"
+					},
 					"ls_covid_reporting_accountKey": {
 						"value": "[parameters('ls_covid_reporting_accountKey')]"
 					},
 					"ls_evin_data_accountKey": {
 						"value": "[parameters('ls_evin_data_accountKey')]"
 					},
-					"PostgreSql1_password": {
-						"value": "[parameters('PostgreSql1_password')]"
+					"ls_azure_covid_db_properties_typeProperties_server": {
+						"value": "[parameters('ls_azure_covid_db_properties_typeProperties_server')]"
+					},
+					"ls_azure_covid_db_properties_typeProperties_database": {
+						"value": "[parameters('ls_azure_covid_db_properties_typeProperties_database')]"
+					},
+					"ls_azure_covid_db_properties_typeProperties_userName": {
+						"value": "[parameters('ls_azure_covid_db_properties_typeProperties_userName')]"
 					},
 					"ls_covid_reporting_properties_typeProperties_url": {
 						"value": "[parameters('ls_covid_reporting_properties_typeProperties_url')]"
@@ -110,15 +135,6 @@
 					},
 					"ls_http_ecdc_properties_typeProperties_url": {
 						"value": "[parameters('ls_http_ecdc_properties_typeProperties_url')]"
-					},
-					"PostgreSql1_properties_typeProperties_server": {
-						"value": "[parameters('PostgreSql1_properties_typeProperties_server')]"
-					},
-					"PostgreSql1_properties_typeProperties_database": {
-						"value": "[parameters('PostgreSql1_properties_typeProperties_database')]"
-					},
-					"PostgreSql1_properties_typeProperties_username": {
-						"value": "[parameters('PostgreSql1_properties_typeProperties_username')]"
 					}
 				}
 			},
@@ -138,8 +154,20 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"PostgreSql1_password": {
+						"value": "[parameters('PostgreSql1_password')]"
+					},
 					"ls_evin_source_password": {
 						"value": "[parameters('ls_evin_source_password')]"
+					},
+					"PostgreSql1_properties_typeProperties_server": {
+						"value": "[parameters('PostgreSql1_properties_typeProperties_server')]"
+					},
+					"PostgreSql1_properties_typeProperties_database": {
+						"value": "[parameters('PostgreSql1_properties_typeProperties_database')]"
+					},
+					"PostgreSql1_properties_typeProperties_username": {
+						"value": "[parameters('PostgreSql1_properties_typeProperties_username')]"
 					},
 					"ls_evin_source_properties_typeProperties_server": {
 						"value": "[parameters('ls_evin_source_properties_typeProperties_server')]"

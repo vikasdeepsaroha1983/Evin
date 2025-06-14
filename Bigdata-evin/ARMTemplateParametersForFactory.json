@@ -11,6 +11,9 @@
 		"PostgreSql1_password": {
 			"value": ""
 		},
+		"ls_azure_covid_db_password": {
+			"value": ""
+		},
 		"ls_covid_reporting_accountKey": {
 			"value": ""
 		},
@@ -28,6 +31,15 @@
 		},
 		"PostgreSql1_properties_typeProperties_username": {
 			"value": "postgres"
+		},
+		"ls_azure_covid_db_properties_typeProperties_server": {
+			"value": "ind-covid-db-server.database.windows.net"
+		},
+		"ls_azure_covid_db_properties_typeProperties_database": {
+			"value": "covid-db"
+		},
+		"ls_azure_covid_db_properties_typeProperties_userName": {
+			"value": "vikas"
 		},
 		"ls_covid_reporting_properties_typeProperties_url": {
 			"value": "https://covidreportdata.dfs.core.windows.net/"
